@@ -8,7 +8,6 @@ import androidx.appcompat.app.AppCompatActivity
 class MainActivity : AppCompatActivity() {
 
     private lateinit var tvDisplay: TextView
-
     private var firstOperand: Double = 0.0
     private var currentOperation: String = ""
 
@@ -17,33 +16,29 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         tvDisplay = findViewById(R.id.tvDisplay)
-        val btn0 = findViewById<Button>(R.id.btn0)
-        val btn1 = findViewById<Button>(R.id.btn1)
-        val btn2 = findViewById<Button>(R.id.btn2)
-        val btn3 = findViewById<Button>(R.id.btn3)
-        val btn4 = findViewById<Button>(R.id.btn4)
-        val btn5 = findViewById<Button>(R.id.btn5)
-        val btn6 = findViewById<Button>(R.id.btn6)
-        val btn7 = findViewById<Button>(R.id.btn7)
-        val btn8 = findViewById<Button>(R.id.btn8)
-        val btn9 = findViewById<Button>(R.id.btn9)
 
+        val buttons = listOf(
+            R.id.btn0 to "0",R.id.btn1 to "1", R.id.btn2 to "2", R.id.btn3 to "3",
+            R.id.btn4 to "4", R.id.btn5 to "5", R.id.btn6 to "6",
+            R.id.btn7 to "7", R.id.btn8 to "8", R.id.btn9 to "9"
+        )
+
+        buttons.forEach { (id, digit) ->
+            findViewById<Button>(id).setOnClickListener { addDigit(digit) }
+        }
+
+        // Кнопки операцій
         val btnAdd = findViewById<Button>(R.id.btnAdd)
-        val btnEquals = findViewById<Button>(R.id.btnEquals)
         val btnSubtract = findViewById<Button>(R.id.btnSubtract)
+        val btnMultiply = findViewById<Button>(R.id.btnMultiply)
+        val btnDivide = findViewById<Button>(R.id.btnDivide)
+        val btnEquals = findViewById<Button>(R.id.btnEquals)
         val btnClear = findViewById<Button>(R.id.btnClear)
 
-
-        btn0.setOnClickListener { addDigit("0") }
-        btn1.setOnClickListener { addDigit("1") }
-        btn2.setOnClickListener { addDigit("2") }
-        btn3.setOnClickListener { addDigit("3") }
-        btn4.setOnClickListener { addDigit("4") }
-        btn5.setOnClickListener { addDigit("5") }
-        btn6.setOnClickListener { addDigit("6") }
-        btn7.setOnClickListener { addDigit("7") }
-        btn8.setOnClickListener { addDigit("8") }
-        btn9.setOnClickListener { addDigit("9") }
+        btnAdd.setOnClickListener { prepareOperation("+") }
+        btnSubtract.setOnClickListener { prepareOperation("-") }
+        btnMultiply.setOnClickListener { prepareOperation("*") }
+        btnDivide.setOnClickListener { prepareOperation("/") }
 
         btnClear.setOnClickListener {
             tvDisplay.text = "0"
@@ -51,51 +46,58 @@ class MainActivity : AppCompatActivity() {
             currentOperation = ""
         }
 
-        btnAdd.setOnClickListener {
-
-            firstOperand = tvDisplay.text.toString().toDouble()
-
-            currentOperation = "+"
-
-            tvDisplay.text = "0"
-        }
-
-        btnSubtract.setOnClickListener {
-            firstOperand = tvDisplay.text.toString().toDouble()
-            // Запам'ятовуємо, що ми хочемо віднімати
-            currentOperation = "-"
-            // Скидаємо екран до "0", щоб вводити друге число
-            tvDisplay.text = "0"
-        }
-
         btnEquals.setOnClickListener {
-            val secondOperand = tvDisplay.text.toString().toDouble()
-            var result = 0.0
+            val secondText = tvDisplay.text.toString()
+            if (secondText == "Помилка") return@setOnClickListener
 
-            if (currentOperation == "+") {
-                result = firstOperand + secondOperand
-            } else if (currentOperation == "-") { // ДОДАНО: перевірка для віднімання
-                result = firstOperand - secondOperand
+            val secondOperand = secondText.toDoubleOrNull() ?: 0.0
+            var result = 0.0
+            var error = false
+
+            when (currentOperation) {
+                "+" -> result = firstOperand + secondOperand
+                "-" -> result = firstOperand - secondOperand
+                "*" -> result = firstOperand * secondOperand
+                "/" -> {
+                    if (secondOperand != 0.0) {
+                        result = firstOperand / secondOperand
+                    } else {
+                        error = true
+                    }
+                }
             }
 
-            tvDisplay.text = formatResult(result)
+            if (error) {
+                tvDisplay.text = "Помилка"
+            } else {
+                tvDisplay.text = formatResult(result)
+            }
             currentOperation = ""
         }
     }
 
-
     private fun addDigit(digit: String) {
-        if (tvDisplay.text.toString() == "0") {
+        if (tvDisplay.text.toString() == "0" || tvDisplay.text.toString() == "Помилка") {
             tvDisplay.text = digit
         } else {
             tvDisplay.append(digit)
         }
     }
-}
-private fun formatResult(result: Double): String {
-    return if (result % 1.0 == 0.0) {
-        result.toLong().toString()
-    } else {
-        result.toString()
+
+    private fun prepareOperation(operation: String) {
+        val currentText = tvDisplay.text.toString()
+        if (currentText == "Помилка") return
+
+        firstOperand = currentText.toDoubleOrNull() ?: 0.0
+        currentOperation = operation
+        tvDisplay.text = "0"
+    }
+
+    private fun formatResult(result: Double): String {
+        return if (result % 1.0 == 0.0) {
+            result.toLong().toString()
+        } else {
+            result.toString()
+        }
     }
 }

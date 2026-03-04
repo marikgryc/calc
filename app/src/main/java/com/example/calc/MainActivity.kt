@@ -31,6 +31,8 @@ class MainActivity : AppCompatActivity() {
         val btnAdd = findViewById<Button>(R.id.btnAdd)
         val btnEquals = findViewById<Button>(R.id.btnEquals)
         val btnSubtract = findViewById<Button>(R.id.btnSubtract)
+        val btnClear = findViewById<Button>(R.id.btnClear)
+
 
         btn0.setOnClickListener { addDigit("0") }
         btn1.setOnClickListener { addDigit("1") }
@@ -42,6 +44,12 @@ class MainActivity : AppCompatActivity() {
         btn7.setOnClickListener { addDigit("7") }
         btn8.setOnClickListener { addDigit("8") }
         btn9.setOnClickListener { addDigit("9") }
+
+        btnClear.setOnClickListener {
+            tvDisplay.text = "0"
+            firstOperand = 0.0
+            currentOperation = ""
+        }
 
         btnAdd.setOnClickListener {
 
@@ -70,7 +78,8 @@ class MainActivity : AppCompatActivity() {
                 result = firstOperand - secondOperand
             }
 
-            tvDisplay.text = result.toString()
+            tvDisplay.text = formatResult(result)
+            currentOperation = ""
         }
     }
 
@@ -81,5 +90,12 @@ class MainActivity : AppCompatActivity() {
         } else {
             tvDisplay.append(digit)
         }
+    }
+}
+private fun formatResult(result: Double): String {
+    return if (result % 1.0 == 0.0) {
+        result.toLong().toString()
+    } else {
+        result.toString()
     }
 }
